@@ -822,8 +822,13 @@ window.addEventListener('load', () => {
     resizeCanvas(); // Ensure canvas is sized correctly on load
     checkOrientation(); // Check orientation and start game or show message
     // 初回ロード時にinitGameを呼び出すが、checkOrientationがすでに呼んでいるためコメントアウト
-    // initGame(); 
+    // initGame();
 });
+
+// Disable default touchmove scrolling on mobile devices
+document.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+}, { passive: false });
 
 // ゲームの開始
 // ゲームオーバー/ステージクリア時のボタンクリックによってinitGameが呼び出されるようにするため、
