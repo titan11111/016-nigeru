@@ -1,3 +1,11 @@
+// ビューポートの高さを CSS 変数 --vh に設定
+function updateVh() {
+    document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+}
+
+window.addEventListener('resize', updateVh);
+updateVh();
+
 // ゲーム要素の取得
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
