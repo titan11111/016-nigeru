@@ -14,12 +14,15 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+:root {
+    --vh: 1vh;
+}
+
 body {
     font-family: 'Courier New', monospace;
     background: linear-gradient(135deg, #0a0f23 0%, #1a1a2e 50%, #16213e 100%);
     color: #00ffff;
-    height: 100vh;
-    height: 100dvh; /* モバイルでの正確なビューポート高さ */
+    height: calc(var(--vh) * 100);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -63,17 +66,16 @@ body {
     line-height: 1.4; /* 行の高さを調整 */
 }
 
-#gameCanvas {
-    background: linear-gradient(180deg, #0f0f23 0%, #1a1a2e 100%);
-    border: 3px solid #00ffff;
-    border-radius: 10px;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
-    max-width: 100%;
-    height: auto; /* 高さ自動調整 */
-    aspect-ratio: 2 / 1; /* 幅:高さ = 2:1 を維持 */
-    display: block;
-    margin: 0 auto;
-}
+    #gameCanvas {
+        background: linear-gradient(180deg, #0f0f23 0%, #1a1a2e 100%);
+        border: 3px solid #00ffff;
+        border-radius: 10px;
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        width: 100vw;
+        height: calc(var(--vh) * 100);
+        display: block;
+        margin: 0 auto;
+    }
 
 .game-controls {
     display: flex;
@@ -259,10 +261,8 @@ body {
     }
     
     #gameCanvas {
-        width: 100%;
-        max-width: 400px;
-        height: auto; /* autoに変更 */
-        aspect-ratio: 2 / 1; /* アスペクト比を維持 */
+        width: 100vw;
+        height: calc(var(--vh) * 100);
     }
     
     .game-controls {
@@ -345,11 +345,9 @@ body {
     }
 
     #gameCanvas {
-        width: 95vw; /* ビューポートの横幅の95%を使用 */
-        max-width: 600px; /* ある程度の最大幅を設定（より広いスマホ向け） */
-        height: auto; /* 高さ自動調整 */
-        aspect-ratio: 2 / 1; /* アスペクト比を2:1に固定 (Canvasのwidth:heightと同じ) */
-        margin: 5px auto; /* 上下のマージンを調整 */
+        width: 100vw;
+        height: calc(var(--vh) * 100);
+        margin: 0 auto;
     }
 
     .game-controls {
