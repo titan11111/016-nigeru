@@ -3,201 +3,268 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    /* Prevent text selection which can interfere with touch */
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    /* Remove tap highlight on iOS */
     -webkit-tap-highlight-color: transparent;
 }
 
 :root {
     --vh: 1vh;
+    --primary-color: #00ffff;
+    --secondary-color: #ff6b6b;
+    --accent-color: #ffff00;
+    --bg-dark: #0a0f23;
+    --bg-medium: #1a1a2e;
+    --bg-light: #16213e;
+}
+
+html {
+    height: 100%;
+    overflow: hidden;
 }
 
 body {
-    font-family: 'Courier New', monospace;
-    background: linear-gradient(135deg, #0a0f23 0%, #1a1a2e 50%, #16213e 100%);
-    color: #00ffff;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-medium) 50%, var(--bg-light) 100%);
+    color: var(--primary-color);
+    height: 100vh;
     height: calc(var(--vh) * 100);
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden; /* デフォルトはoverflow: hidden */
-    touch-action: none; /* モバイルスワイプによるスクロール無効化 */
+    overflow: hidden;
+    touch-action: none;
     overscroll-behavior: none;
+    position: relative;
+    /* iOS対応 */
+    -webkit-overflow-scrolling: touch;
 }
 
 .game-container {
-    text-align: center;
-    padding: 20px;
-    max-width: 900px;
     width: 100%;
     height: 100%;
-    display: flex; /* 追加: flexboxで子要素を配置 */
-    flex-direction: column; /* 追加: 縦方向に並べる */
-    align-items: center; /* 追加: 中央揃え */
-    justify-content: space-between; /* 追加: 上下にぴったり配置 */
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 10px) env(safe-area-inset-bottom, 10px) env(safe-area-inset-left, 10px);
+    gap: 10px;
+    position: relative;
 }
 
 .game-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding: 0 20px;
-    width: 100%; /* 幅を100%に */
+    width: 100%;
+    max-width: 800px;
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    flex-shrink: 0;
 }
 
 .game-header h1 {
-    font-size: 2rem;
-    text-shadow: 0 0 20px #00ffff;
-    color: #00ffff;
+    font-size: clamp(1.2rem, 4vw, 2rem);
+    text-shadow: 0 0 20px var(--primary-color);
+    color: var(--primary-color);
+    animation: glow 2s ease-in-out infinite;
+    white-space: nowrap;
 }
 
 .score {
-    font-size: 1.2rem; /* サイズを調整 */
+    font-size: clamp(0.9rem, 2.5vw, 1.2rem);
     font-weight: bold;
-    color: #ff6b6b;
-    text-shadow: 0 0 10px #ff6b6b;
-    line-height: 1.4; /* 行の高さを調整 */
+    color: var(--secondary-color);
+    text-shadow: 0 0 10px var(--secondary-color);
+    line-height: 1.4;
+    text-align: right;
+    white-space: nowrap;
 }
 
-    #gameCanvas {
-        background: linear-gradient(180deg, #0f0f23 0%, #1a1a2e 100%);
-        border: 3px solid #00ffff;
-        border-radius: 10px;
-        box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
-        width: 100vw;
-        height: calc(var(--vh) * 100);
-        display: block;
-        margin: 0 auto;
-    }
+.canvas-wrapper {
+    flex: 1;
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+#gameCanvas {
+    background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-medium) 100%);
+    border: 2px solid var(--primary-color);
+    border-radius: 10px;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    aspect-ratio: 2 / 1;
+    display: block;
+}
 
 .game-controls {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 30px;
-    margin: 20px 0;
+    gap: clamp(15px, 5vw, 40px);
+    width: 100%;
+    max-width: 600px;
+    padding: 10px;
     flex-wrap: wrap;
-    width: 100%; /* 幅を100%に */
+    flex-shrink: 0;
 }
 
 .move-controls {
     display: flex;
-    gap: 10px;
+    gap: 8px;
 }
 
 .action-controls {
     display: flex;
-    gap: 15px;
+    gap: 12px;
 }
 
 .control-btn {
-    background: linear-gradient(145deg, #ff6b6b, #ee5a24);
     border: none;
-    border-radius: 15px;
+    border-radius: 12px;
     color: white;
-    font-size: 1.2rem;
+    font-size: clamp(0.8rem, 2.5vw, 1.1rem);
     font-weight: bold;
-    padding: 15px 30px;
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+    transition: all 0.2s ease;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-family: inherit;
+    touch-action: manipulation;
+    /* iOS対応 */
+    -webkit-appearance: none;
+    -webkit-border-radius: 12px;
 }
 
 .move-btn {
-    background: linear-gradient(145deg, #00ffff, #0099cc);
-    color: #0a0f23;
-    padding: 15px 20px;
-    font-size: 1.5rem;
-    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+    background: linear-gradient(145deg, var(--primary-color), #0099cc);
+    color: var(--bg-dark);
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    min-width: 44px;
+    min-height: 44px;
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.3);
 }
 
-.move-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5);
-    background: linear-gradient(145deg, #33ffff, #00ccff);
+.jump-btn {
+    background: linear-gradient(145deg, #00ff88, #00cc66);
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
 }
 
-.control-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
-    background: linear-gradient(145deg, #ff5252, #ff3838);
+.slide-btn {
+    background: linear-gradient(145deg, var(--secondary-color), #ee5a24);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.control-btn:hover,
+.control-btn:focus {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
 }
 
 .control-btn:active {
     transform: translateY(0);
-    box-shadow: 0 3px 10px rgba(255, 107, 107, 0.3);
+    filter: brightness(0.9);
 }
 
 .game-info {
-    margin: 20px 0;
-    font-size: 1rem;
-    line-height: 1.6;
-    width: 100%; /* 幅を100%に */
+    width: 100%;
+    max-width: 800px;
+    padding: 10px 20px;
+    flex-shrink: 0;
 }
 
-.game-info p {
-    margin: 8px 0;
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 8px;
+    font-size: clamp(0.75rem, 2vw, 0.95rem);
+    line-height: 1.4;
+}
+
+.info-item {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 255, 0.1);
     text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
 }
 
-.game-over {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.9);
-    border: 3px solid #ff6b6b;
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.overlay-content {
+    background: linear-gradient(145deg, var(--bg-dark), var(--bg-medium));
+    border: 3px solid var(--secondary-color);
     border-radius: 20px;
-    padding: 40px;
+    padding: clamp(20px, 5vw, 40px);
     text-align: center;
     box-shadow: 0 0 50px rgba(255, 107, 107, 0.5);
-    z-index: 1000;
+    max-width: 90%;
+    width: auto;
+    min-width: 280px;
 }
 
-.game-over h2 {
-    color: #ff6b6b;
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-    text-shadow: 0 0 20px #ff6b6b;
-}
-
-.game-over p {
-    font-size: 1.5rem;
-    margin-bottom: 30px;
-    color: #00ffff;
-}
-
-/* ステージクリア画面用 */
-#stageClear {
-    border-color: #00ffff;
+#stageClear .overlay-content {
+    border-color: var(--primary-color);
     box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
 }
 
-#stageClear h2 {
-    color: #00ffff;
-    text-shadow: 0 0 20px #00ffff;
+.overlay h2 {
+    color: var(--secondary-color);
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px var(--secondary-color);
 }
 
+#stageClear h2 {
+    color: var(--primary-color);
+    text-shadow: 0 0 20px var(--primary-color);
+}
+
+.overlay p {
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    margin-bottom: 30px;
+    color: var(--primary-color);
+}
 
 .restart-btn {
-    background: linear-gradient(145deg, #00ffff, #0099cc);
+    background: linear-gradient(145deg, var(--primary-color), #0099cc);
     border: none;
     border-radius: 15px;
-    color: #0a0f23;
-    font-size: 1.3rem;
+    color: var(--bg-dark);
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
     font-weight: bold;
-    padding: 15px 40px;
+    padding: clamp(10px, 2vw, 15px) clamp(20px, 4vw, 40px);
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+    touch-action: manipulation;
+    -webkit-appearance: none;
 }
 
 .restart-btn:hover {
@@ -207,244 +274,188 @@ body {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
-/* 画面回転を促すメッセージのスタイル */
+/* 画面回転メッセージ */
 .rotate-message {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.95);
-    color: #00ffff;
+    background: linear-gradient(135deg, var(--bg-dark), var(--bg-medium));
+    color: var(--primary-color);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    font-size: 1.8rem;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.rotate-content {
     text-align: center;
-    z-index: 9999; /* 最前面に表示 */
-    backdrop-filter: blur(5px); /* 背景をぼかす */
-    text-shadow: 0 0 15px #00ffff;
+    padding: 40px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 20px;
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+}
+
+.rotate-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    animation: bounce 2s infinite;
+}
+
+.rotate-content p {
+    font-size: clamp(1.2rem, 4vw, 2rem);
+    margin: 10px 0;
+    text-shadow: 0 0 15px var(--primary-color);
     line-height: 1.5;
 }
 
-.rotate-message p:first-child {
-    font-size: 2.5rem; /* メインメッセージを大きく */
-    margin-bottom: 10px;
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
 }
 
-.rotate-message.hidden {
-    display: none;
-}
-
-
-/* スマホ全般の縦向き時の調整 (max-width: 768px を含む) */
-@media (max-width: 768px) {
-    /* transform: scale(0.9) は削除しました */
-    
-    .game-header {
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 15px;
-        padding: 0 10px; /* パディングを調整 */
-    }
-    
-    .game-header h1 {
-        font-size: 1.5rem;
-    }
-    
-    .score {
-        font-size: 1.2rem;
-    }
-    
-    #gameCanvas {
-        width: 100vw;
-        height: calc(var(--vh) * 100);
-    }
-    
-    .game-controls {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .control-btn {
-        font-size: 1rem;
-        padding: 12px 20px;
-    }
-    
-    .move-btn {
-        padding: 12px 15px;
-        font-size: 1.2rem;
-    }
-    
-    .game-info {
-        font-size: 0.9rem;
-    }
-    
-    .game-over {
-        width: 90%;
-        max-width: 350px;
-        padding: 20px;
-    }
-    
-    .game-over h2 {
-        font-size: 2rem;
-    }
-    
-    .game-over p {
-        font-size: 1.2rem;
-    }
-}
-
-/* 横向きスマホ対応 (768px以下の横幅で、かつ横向きの場合) */
-@media screen and (orientation: landscape) and (max-width: 768px) {
-    body {
-        /* 横向きスマホでは、画面全体を埋めるように調整 */
-        padding: 0;
-        margin: 0;
-        min-height: 100vh;
-        width: 100vw;
-        display: flex;
-        flex-direction: column; /* 縦方向に要素を並べる */
-        justify-content: flex-start; /* 上から配置 */
-        align-items: center;
-        overflow-y: auto; /* 必要に応じて縦スクロールを許可 */
-        overflow-x: hidden; /* 横方向のスクロールは禁止 */
-    }
-
-    .game-container {
-        /* 横向きスマホでは、パディングを減らすか調整してスペースを確保 */
-        padding: 10px;
-        width: 100%; /* 横幅いっぱいに */
-        max-width: none; /* 最大幅の制限を解除 */
-        display: flex; /* Flexboxで子要素を配置 */
-        flex-direction: column; /* 縦方向に要素を並べる */
-        align-items: center; /* 中央揃え */
-        justify-content: flex-start; /* 上から配置 */
-    }
-
-    .game-header {
-        width: 95%; /* ヘッダーの幅を調整 */
-        flex-direction: row; /* 横並びに戻す */
-        justify-content: space-between; /* 両端揃え */
-        align-items: center;
-        margin-bottom: 5px; /* マージンを減らす */
-        padding: 5px 10px; /* パディングを減らす */
-    }
-
-    .game-header h1 {
-        font-size: 1.2rem; /* ヘッダーの文字サイズをさらに小さく */
-    }
-
-    .score {
-        font-size: 0.9rem; /* スコアの文字サイズをさらに小さく */
-        line-height: 1.2;
-    }
-
-    #gameCanvas {
-        width: 100vw;
-        height: calc(var(--vh) * 100);
-        margin: 0 auto;
-    }
-
-    .game-controls {
-        flex-direction: row; /* コントロールボタンを横並びにする */
-        gap: 10px; /* ボタン間のスペースを調整 */
-        margin: 5px 0 10px 0; /* マージンを調整 */
-        padding: 0 10px;
-        width: 95%; /* 幅を調整 */
-        justify-content: center; /* 中央に配置 */
-    }
-
-    .move-controls, .action-controls {
-        gap: 5px; /* 各グループ内のボタン間のスペースを調整 */
-    }
-
-    .control-btn {
-        font-size: 0.8rem; /* ボタンの文字サイズを小さく */
-        padding: 8px 15px; /* ボタンのパディングを小さく */
-        border-radius: 10px; /* 角丸を小さく */
-    }
-
-    .move-btn {
-        font-size: 1rem; /* 矢印ボタンは少し大きめ */
-        padding: 8px 10px;
-    }
-
-    .game-info {
-        font-size: 0.7rem; /* 情報テキストを小さく */
-        margin: 5px 0;
-        line-height: 1.4;
-        width: 95%;
-    }
-    
-    /* ゲームオーバー/ステージクリア画面の表示調整 */
-    .game-over {
-        transform: translate(-50%, -50%) scale(0.8); /* 少し縮小して収める */
-        padding: 20px;
-        width: 80%;
-    }
-    .game-over h2 {
-        font-size: 1.8rem;
-    }
-    .game-over p {
-        font-size: 1rem;
-    }
-    .restart-btn {
-        font-size: 1rem;
-        padding: 10px 20px;
-    }
-}
-
-/* 縦画面（portrait）の場合のみメッセージを表示し、ゲームを隠す */
-@media screen and (orientation: portrait) and (max-width: 768px) {
-    .rotate-message {
-        display: flex; /* 縦画面でスマホの場合に表示 */
-    }
-    .game-container {
-        display: none; /* 縦画面でスマホの場合、ゲームを隠す */
-    }
-    body {
-        overflow: hidden; /* 縦画面でスクロールバーが出ないように */
-    }
-}
-
-@media (max-width: 480px) {
-    .game-header h1 {
-        font-size: 1.2rem;
-    }
-    
-    .score {
-        font-size: 1rem;
-    }
-    
-    .control-btn {
-        font-size: 0.9rem;
-        padding: 10px 15px;
-    }
-    
-    .game-info {
-        font-size: 0.8rem;
-    }
-    
-    .game-over h2 {
-        font-size: 1.5rem;
-    }
-    
-    .game-over p {
-        font-size: 1rem;
-    }
-}
-
-/* アニメーション効果 */
 @keyframes glow {
-    0%, 100% { text-shadow: 0 0 20px #00ffff; }
-    50% { text-shadow: 0 0 30px #00ffff, 0 0 40px #00ffff; }
+    0%, 100% { text-shadow: 0 0 20px var(--primary-color); }
+    50% { text-shadow: 0 0 30px var(--primary-color), 0 0 40px var(--primary-color); }
 }
 
-.game-header h1 {
-    animation: glow 2s ease-in-out infinite;
+/* タブレット対応 */
+@media screen and (max-width: 1024px) {
+    .game-container {
+        gap: 8px;
+    }
+    
+    .info-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+/* スマートフォン縦向き */
+@media screen and (orientation: portrait) and (max-width: 768px) {
+    .game-container {
+        display: none;
+    }
+    
+    .rotate-message {
+        display: flex !important;
+    }
+    
+    body {
+        overflow: hidden;
+    }
+}
+
+/* スマートフォン横向き */
+@media screen and (orientation: landscape) and (max-height: 768px) {
+    body {
+        padding: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    .game-container {
+        padding: env(safe-area-inset-top, 5px) env(safe-area-inset-right, 5px) env(safe-area-inset-bottom, 5px) env(safe-area-inset-left, 5px);
+        gap: 5px;
+        min-height: 100vh;
+    }
+    
+    .game-header {
+        padding: 5px 15px;
+        margin-bottom: 0;
+    }
+    
+    #gameCanvas {
+        aspect-ratio: 2.5 / 1;
+    }
+    
+    .game-controls {
+        gap: clamp(10px, 3vw, 20px);
+        padding: 5px;
+    }
+    
+    .game-info {
+        padding: 5px 15px;
+    }
+    
+    .info-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 5px;
+        font-size: clamp(0.65rem, 1.8vw, 0.8rem);
+    }
+    
+    .info-item {
+        padding: 5px 8px;
+    }
+    
+    .overlay-content {
+        transform: scale(0.9);
+        padding: clamp(15px, 3vw, 25px);
+    }
+}
+
+/* iPhone対応 */
+@media screen and (max-width: 480px) {
+    .control-btn {
+        min-width: 44px;
+        min-height: 44px;
+        font-size: clamp(0.7rem, 2vw, 0.9rem);
+    }
+    
+    .game-header h1 {
+        font-size: clamp(1rem, 3.5vw, 1.5rem);
+    }
+    
+    .score {
+        font-size: clamp(0.8rem, 2vw, 1rem);
+    }
+}
+
+/* Mac Safari対応 */
+@media screen and (-webkit-min-device-pixel-ratio: 1) {
+    .control-btn:hover {
+        transform: translateY(-2px);
+    }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-dark: #000510;
+        --bg-medium: #0f0f1f;
+        --bg-light: #0a1025;
+    }
+}
+
+/* 高解像度ディスプレイ対応 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    #gameCanvas {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+    .game-header h1,
+    .rotate-icon {
+        animation: none;
+    }
+    
+    .control-btn {
+        transition: none;
+    }
+}
+
+/* フォーカス表示 */
+.control-btn:focus,
+.restart-btn:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
 }
