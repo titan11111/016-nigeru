@@ -2,21 +2,23 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>サイバーパンク ロボットランナー</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="game-container">
         <div class="game-header">
-            <h1>ロボットランナー</h1>
+            <h1>🤖 ロボットランナー</h1>
             <div class="score">
                 ステージ: <span id="currentStageDisplay">1</span> / 5<br>
                 スコア: <span id="score">0</span> / <span id="targetScoreDisplay">200</span>
             </div>
         </div>
         
-        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+        </div>
         
         <div class="game-controls">
             <div class="move-controls">
@@ -24,35 +26,44 @@
                 <button id="rightBtn" class="control-btn move-btn">→</button>
             </div>
             <div class="action-controls">
-                <button id="jumpBtn" class="control-btn">ジャンプ</button>
-                <button id="slideBtn" class="control-btn">スライド</button>
+                <button id="jumpBtn" class="control-btn jump-btn">ジャンプ</button>
+                <button id="slideBtn" class="control-btn slide-btn">スライド</button>
             </div>
         </div>
         
         <div class="game-info">
-            <p>🤖 ロボットを操作して障害物を避けよう！</p>
-            <p>💻 矢印キーで移動、スペースでジャンプ、↓でスライド</p>
-            <p>📱 スマホでは画面のボタンをタップしてね</p>
-            <p>✨ サイバーチップを集めてスコアアップ！</p>
-            <p>💀 マルウェアは避けてね！</p>
+            <div class="info-grid">
+                <div class="info-item">🤖 ロボットを操作して障害物を避けよう！</div>
+                <div class="info-item">💻 矢印キーで移動、スペースでジャンプ、↓でスライド</div>
+                <div class="info-item">📱 スマホでは画面のボタンをタップ</div>
+                <div class="info-item">✨ サイバーチップを集めてスコアアップ！</div>
+                <div class="info-item">💀 マルウェアは避けてね！</div>
+            </div>
         </div>
         
-        <div id="gameOver" class="game-over hidden">
-            <h2>ゲームオーバー</h2>
-            <p>最終スコア: <span id="finalScore">0</span></p>
-            <button id="restartBtn" class="restart-btn">もう一度プレイ</button>
+        <div id="gameOver" class="overlay hidden">
+            <div class="overlay-content">
+                <h2>ゲームオーバー</h2>
+                <p>最終スコア: <span id="finalScore">0</span></p>
+                <button id="restartBtn" class="restart-btn">もう一度プレイ</button>
+            </div>
         </div>
 
-        <div id="stageClear" class="game-over hidden">
-            <h2>ステージクリア！</h2>
-            <p>スコア: <span id="stageClearScore">0</span></p>
-            <button id="nextStageBtn" class="restart-btn">次のステージへ</button>
+        <div id="stageClear" class="overlay hidden">
+            <div class="overlay-content">
+                <h2>ステージクリア！</h2>
+                <p>スコア: <span id="stageClearScore">0</span></p>
+                <button id="nextStageBtn" class="restart-btn">次のステージへ</button>
+            </div>
         </div>
     </div>
     
     <div id="rotateDeviceMessage" class="rotate-message hidden">
-        <p>より良いプレイ体験のため、</p>
-        <p>端末を横向きにしてください！ ↩️</p>
+        <div class="rotate-content">
+            <div class="rotate-icon">📱↩️</div>
+            <p>より良いプレイ体験のため、</p>
+            <p><strong>端末を横向きにしてください！</strong></p>
+        </div>
     </div>
 
     <script src="script.js"></script>
