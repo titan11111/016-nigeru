@@ -1,761 +1,696 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>CYBER RUNNER 2077</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>NEON SURVIVOR: DOUBLE JUMP</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
-        body {
-            font-family: 'Courier New', monospace;
-            background: #050505;
-            color: #00ffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-touch-callout: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
 
-        .game-container {
-            width: 100%;
-            max-width: 900px;
-            padding: 10px;
-            position: relative;
-        }
+    body {
+        background-color: #000;
+        color: #fff;
+        font-family: 'Orbitron', sans-serif;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
 
-        .game-header {
-            background: rgba(0,20,40,0.8);
-            border: 2px solid #00ffff;
-            padding: 10px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
+    #gameContainer {
+        position: relative;
+        width: 100%;
+        max-width: 900px;
+        height: 100vh;
+        max-height: 600px;
+        background: #000;
+        border: 2px solid #00ffff;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        overflow: hidden;
+    }
 
-        .game-header h1 {
-            font-size: 1.8rem;
-            text-shadow: 0 0 10px #00ffff;
-            margin-bottom: 5px;
-        }
+    canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
 
-        .score {
-            color: #ff00ff;
-            font-size: 1rem;
-        }
+    /* UI Overlay */
+    .ui-layer {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 20px;
+    }
 
-        #gameCanvas {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 2/1;
-            border: 2px solid #00ffff;
-            display: block;
-            background: linear-gradient(180deg, #0f0f23 0%, #2a2a4e 100%);
-        }
+    .hud {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.2rem;
+        text-shadow: 0 0 5px #fff;
+        z-index: 10;
+        width: 100%;
+    }
 
-        /* モバイル用コントロール */
-        .mobile-controls {
-            position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            display: none;
-            z-index: 100;
-        }
+    .timer-box {
+        color: #ff00ff;
+        text-shadow: 0 0 5px #ff00ff;
+    }
 
-        .left-controls {
-            position: absolute;
-            left: 20px;
-            bottom: 0;
-            display: flex;
-            gap: 10px;
-        }
+    /* Message Screens */
+    .message-screen {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        border: 2px solid #00ffff;
+        padding: 40px;
+        text-align: center;
+        border-radius: 10px;
+        backdrop-filter: blur(5px);
+        pointer-events: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        z-index: 100;
+        min-width: 300px;
+        box-shadow: 0 0 50px rgba(0, 255, 255, 0.2);
+    }
 
-        .right-controls {
-            position: absolute;
-            right: 20px;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+    h1, h2 {
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-bottom: 5px;
+        color: #00ffff;
+        text-shadow: 2px 2px #ff00ff;
+    }
 
-        .control-btn {
-            width: 60px;
-            height: 60px;
-            background: rgba(0,255,255,0.2);
-            border: 2px solid #00ffff;
-            color: #00ffff;
-            font-size: 20px;
-            font-weight: bold;
-            border-radius: 10px;
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
+    .sub-text {
+        color: #aaa;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
 
-        .control-btn:active {
-            background: rgba(0,255,255,0.5);
-            transform: scale(0.95);
-        }
+    .btn {
+        background: transparent;
+        border: 2px solid #00ffff;
+        color: #00ffff;
+        padding: 15px 30px;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+        text-transform: uppercase;
+        box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    }
 
-        /* オーバーレイ */
-        .game-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(10,15,30,0.95);
-            border: 2px solid #00ffff;
-            padding: 30px;
-            text-align: center;
-            min-width: 280px;
-            z-index: 200;
-        }
+    .btn:hover {
+        background: #00ffff;
+        color: #000;
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+        transform: scale(1.05);
+    }
 
-        .game-overlay h2 {
-            color: #00ffff;
-            font-size: 2rem;
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px #00ffff;
-        }
+    .hidden { display: none !important; }
 
-        .game-overlay p {
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-        }
+    /* Controls */
+    .controls-area {
+        position: absolute;
+        bottom: 20px;
+        left: 0;
+        width: 100%;
+        height: 140px;
+        pointer-events: none;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 20px;
+        z-index: 50;
+    }
 
-        .start-btn {
-            background: #00ffff;
-            color: #000;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+    .d-pad, .action-pad {
+        pointer-events: auto;
+        display: flex;
+        gap: 15px;
+        align-items: flex-end;
+    }
 
-        .start-btn:hover {
-            background: #fff;
-            transform: scale(1.05);
-        }
+    .action-pad {
+        flex-direction: column;
+        gap: 15px;
+        justify-content: flex-end;
+    }
 
-        .hidden {
-            display: none !important;
-        }
+    .ctrl-btn {
+        width: 70px;
+        height: 70px;
+        background: rgba(0, 255, 255, 0.15);
+        border: 2px solid rgba(0, 255, 255, 0.5);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        color: #00ffff;
+        backdrop-filter: blur(4px);
+        transition: 0.1s;
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+    }
 
-        /* モバイル表示調整 */
-        @media (max-width: 768px) and (orientation: portrait) {
-            .mobile-controls {
-                display: block;
-            }
-            
-            .game-container {
-                padding: 5px;
-            }
-
-            .game-header h1 {
-                font-size: 1.2rem;
-            }
-
-            #gameCanvas {
-                aspect-ratio: 16/9;
-            }
-        }
-
-        @media (max-width: 850px) and (orientation: landscape) {
-            .mobile-controls {
-                display: block;
-            }
-
-            .control-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 18px;
-            }
-
-            .left-controls {
-                left: 10px;
-            }
-
-            .right-controls {
-                right: 10px;
-            }
-        }
-
-        /* キーボード操作説明 */
-        .keyboard-info {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 0.9rem;
-            opacity: 0.7;
-        }
-
-        @media (max-width: 768px) {
-            .keyboard-info {
-                display: none;
-            }
-        }
-    </style>
+    .ctrl-btn:active {
+        background: rgba(0, 255, 255, 0.6);
+        color: #000;
+        transform: scale(0.95);
+    }
+</style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="game-header">
-            <h1>🤖 CYBER RUNNER 🤖</h1>
-            <div class="score">
-                STAGE: <span id="stage">1</span> / 5 | 
-                SCORE: <span id="score">0</span> / <span id="target">200</span>
-            </div>
-        </div>
 
-        <canvas id="gameCanvas"></canvas>
+<div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
 
-        <div class="keyboard-info">
-            矢印キー: 移動 | SPACE: ジャンプ | ↓: しゃがみ
-        </div>
-
-        <!-- スタート画面 -->
-        <div id="startScreen" class="game-overlay">
-            <h2>CYBER RUNNER</h2>
-            <p>ロボットを操作して<br>障害物を避けよう！</p>
-            <button class="start-btn" onclick="startGame()">START GAME</button>
-        </div>
-
-        <!-- ゲームオーバー -->
-        <div id="gameOverScreen" class="game-overlay hidden">
-            <h2 id="resultTitle">GAME OVER</h2>
-            <p>SCORE: <span id="finalScore">0</span></p>
-            <button class="start-btn" onclick="restartGame()">RETRY</button>
-        </div>
-
-        <!-- ステージクリア -->
-        <div id="stageClearScreen" class="game-overlay hidden">
-            <h2>STAGE CLEAR!</h2>
-            <p>SCORE: <span id="clearScore">0</span></p>
-            <button class="start-btn" onclick="nextStage()">NEXT STAGE</button>
+    <div class="ui-layer">
+        <div class="hud">
+            <div>STAGE <span id="stageNum">1</span></div>
+            <div class="timer-box">TIME: <span id="timer">60.00</span></div>
         </div>
     </div>
 
-    <!-- モバイル用コントロール -->
-    <div class="mobile-controls">
-        <div class="left-controls">
-            <div class="control-btn" id="leftBtn">←</div>
-            <div class="control-btn" id="rightBtn">→</div>
+    <div class="controls-area" id="mobileControls">
+        <div class="d-pad">
+            <div class="ctrl-btn" id="btnLeft">←</div>
+            <div class="ctrl-btn" id="btnRight">→</div>
         </div>
-        <div class="right-controls">
-            <div class="control-btn" id="jumpBtn">↑</div>
-            <div class="control-btn" id="slideBtn">↓</div>
+        <div class="action-pad">
+            <div class="ctrl-btn" id="btnJump">J</div>
+            <div class="ctrl-btn" id="btnSlide">S</div>
         </div>
     </div>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+    <div id="startScreen" class="message-screen">
+        <h1>NEON SURVIVOR</h1>
+        <div class="sub-text">DOUBLE JUMP SYSTEM ONLINE</div>
+        <p>1分間 生き残れ</p>
+        <button class="btn" onclick="game.startStage(1)">MISSION START</button>
+    </div>
 
-        // ゲーム状態
-        let gameRunning = false;
-        let score = 0;
-        let currentStage = 1;
-        let targetScore = 200;
-        let gameSpeed = 4;
-        let keys = {};
+    <div id="gameOverScreen" class="message-screen hidden">
+        <h2 style="color:#ff3333;">CRITICAL ERROR</h2>
+        <p>障害物衝突</p>
+        <button class="btn" onclick="game.retryStage()">RETRY</button>
+    </div>
 
-        // プレイヤー設定
-        const player = {
-            x: 100,
-            y: 0,
-            width: 40,
-            height: 40,
-            velocityY: 0,
-            velocityX: 0,
-            jumping: false,
-            jumpCount: 0,
-            maxJumps: 2,
-            sliding: false,
-            slideTimer: 0,
-            color: '#00ffff'
-        };
+    <div id="stageClearScreen" class="message-screen hidden">
+        <h2 style="color:#33ff33;">AREA SECURED</h2>
+        <p>次のレベルへ移行します</p>
+        <button class="btn" onclick="game.nextStage()">NEXT LEVEL</button>
+    </div>
 
-        // 障害物配列
-        let obstacles = [];
-        let particles = [];
-        let backgroundBuildings = [];
+    <div id="endingScreen" class="message-screen hidden">
+        <h1 style="color:#ffff00;">ALL CLEAR</h1>
+        <p>驚異的な反射神経です。<br>あなたは真のサバイバーです。</p>
+        <button class="btn" onclick="location.reload()">BACK TO TITLE</button>
+    </div>
+</div>
 
-        // Canvas初期設定
-        function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+<script>
+    // Audio System (BGM / SE) - そのまま維持
+    const audioSys = {
+        bgm: new Audio('audio/run.mp3'),
+        jump: new Audio('audio/tobu.mp3'),
+        init: function() {
+            this.bgm.loop = true;
+            this.bgm.volume = 0.4;
+            this.jump.volume = 0.5;
+        },
+        playBGM: function() { this.bgm.play().catch(()=>{}); },
+        stopBGM: function() { this.bgm.pause(); this.bgm.currentTime = 0; },
+        playJump: function() { 
+            this.jump.currentTime = 0; 
+            this.jump.play().catch(()=>{}); 
+        }
+    };
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // UI Elements
+    const ui = {
+        start: document.getElementById('startScreen'),
+        gameOver: document.getElementById('gameOverScreen'),
+        clear: document.getElementById('stageClearScreen'),
+        ending: document.getElementById('endingScreen'),
+        stage: document.getElementById('stageNum'),
+        timer: document.getElementById('timer')
+    };
+
+    // --- Difficulty Balance ---
+    const STAGE_CONFIG = {
+        1: { name: "NIGHT CITY",  speed: 5,   minGap: 100, maxGap: 150, bgType: 'city' },    
+        2: { name: "THE HARBOR",  speed: 6,   minGap: 90,  maxGap: 130, bgType: 'port' },    
+        3: { name: "RESIDENTIAL", speed: 7.5, minGap: 70,  maxGap: 110, bgType: 'town' },    
+        4: { name: "FACTORY",     speed: 9,   minGap: 50,  maxGap: 90,  bgType: 'factory' }, 
+        5: { name: "MARS",        speed: 11,  minGap: 40,  maxGap: 70,  bgType: 'mars' }     
+    };
+
+    const TARGET_TIME = 60.0;
+
+    // Game State
+    let state = {
+        running: false,
+        stage: 1,
+        timeLeft: TARGET_TIME,
+        frameCount: 0,
+        spawnTimer: 0,
+        keys: {}
+    };
+
+    let player = {
+        x: 100, y: 0, width: 40, height: 40,
+        vy: 0, 
+        jumpCount: 0,     
+        maxJumps: 2,      
+        isSliding: false,
+        color: '#00ffff'
+    };
+
+    let obstacles = [];
+    let bgObjects = [];
+    let particles = [];
+
+    const game = {
+        init: function() {
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            this.bindControls();
+            audioSys.init();
+            this.generateBgElements(1);
+            this.draw();
+        },
+
+        resize: function() {
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
             player.y = canvas.height - 80;
-        }
+        },
 
-        // ステージ設定
-        const stageSettings = {
-            1: { target: 200, speed: 4, obsChance: 0.015, highObsChance: 0.008 },
-            2: { target: 500, speed: 5, obsChance: 0.02, highObsChance: 0.01 },
-            3: { target: 1000, speed: 6, obsChance: 0.025, highObsChance: 0.012 },
-            4: { target: 1500, speed: 7, obsChance: 0.03, highObsChance: 0.015 },
-            5: { target: 2000, speed: 8, obsChance: 0.035, highObsChance: 0.018 }
-        };
-
-        // ゲーム開始
-        function startGame() {
-            document.getElementById('startScreen').classList.add('hidden');
-            document.getElementById('gameOverScreen').classList.add('hidden');
-            document.getElementById('stageClearScreen').classList.add('hidden');
-            
-            gameRunning = true;
-            score = 0;
-            currentStage = 1;
-            resetStage();
-            gameLoop();
-        }
-
-        function resetStage() {
-            const settings = stageSettings[currentStage];
-            targetScore = settings.target;
-            gameSpeed = settings.speed;
-            
-            obstacles = [];
-            particles = [];
-            backgroundBuildings = [];
+        startStage: function(lvl) {
+            audioSys.playBGM();
+            state.stage = lvl;
+            state.running = true;
+            state.timeLeft = TARGET_TIME;
+            state.frameCount = 0;
+            state.spawnTimer = 60; 
             
             player.x = 100;
             player.y = canvas.height - 80;
-            player.velocityY = 0;
-            player.velocityX = 0;
+            player.vy = 0;
             player.jumpCount = 0;
-            player.sliding = false;
-            player.slideTimer = 0;
             
-            generateBackground();
-            updateUI();
-        }
-
-        function generateBackground() {
-            for (let i = 0; i < 10; i++) {
-                backgroundBuildings.push({
-                    x: Math.random() * canvas.width * 2,
-                    y: canvas.height - 150 - Math.random() * 200,
-                    width: 50 + Math.random() * 50,
-                    height: 100 + Math.random() * 200,
-                    color: `hsl(220, 30%, ${10 + Math.random() * 15}%)`
-                });
-            }
-        }
-
-        // 描画関数
-        function drawBackground() {
-            // 背景グラデーション
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#0a0a1a');
-            gradient.addColorStop(1, '#1a1a3a');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // ビル群
-            ctx.globalAlpha = 0.3;
-            backgroundBuildings.forEach(building => {
-                ctx.fillStyle = building.color;
-                ctx.fillRect(building.x, building.y, building.width, building.height);
-            });
-            ctx.globalAlpha = 1;
-
-            // 地面
-            ctx.fillStyle = '#111';
-            ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
-            ctx.strokeStyle = '#00ffff';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(0, canvas.height - 20);
-            ctx.lineTo(canvas.width, canvas.height - 20);
-            ctx.stroke();
-        }
-
-        function drawPlayer() {
-            ctx.save();
-            ctx.fillStyle = player.color;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = player.color;
-
-            if (player.sliding && player.slideTimer > 0) {
-                // しゃがみ状態
-                ctx.fillRect(player.x, player.y + 20, player.width + 10, 20);
-                // 目
-                ctx.fillStyle = '#ffff00';
-                ctx.fillRect(player.x + 25, player.y + 25, 8, 4);
-            } else {
-                // 通常状態
-                ctx.fillRect(player.x, player.y, player.width, player.height);
-                // 目
-                ctx.fillStyle = '#ffff00';
-                ctx.fillRect(player.x + 25, player.y + 10, 8, 6);
-            }
-
-            ctx.restore();
-        }
-
-        function drawObstacles() {
-            obstacles.forEach(obs => {
-                ctx.fillStyle = obs.color;
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = obs.color;
-
-                if (obs.type === 'box') {
-                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-                } else if (obs.type === 'high') {
-                    // 上部障害物（しゃがみで回避）
-                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-                    // 警告マーク
-                    ctx.fillStyle = '#ffff00';
-                    ctx.font = '20px sans-serif';
-                    ctx.fillText('⚠', obs.x + 35, obs.y + 25);
-                } else if (obs.type === 'laser') {
-                    // 縦レーザー（ジャンプで回避）
-                    const pulse = Math.sin(Date.now() * 0.01) * 0.3 + 0.7;
-                    ctx.globalAlpha = pulse;
-                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-                    ctx.globalAlpha = 1;
-                } else if (obs.type === 'item') {
-                    ctx.beginPath();
-                    ctx.arc(obs.x + 15, obs.y + 15, 15, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.fillStyle = '#fff';
-                    ctx.font = '16px sans-serif';
-                    ctx.fillText('+', obs.x + 10, obs.y + 20);
-                }
-            });
-        }
-
-        // 更新関数
-        function updatePlayer() {
-            // 横移動
-            if (keys['ArrowLeft']) {
-                player.velocityX = Math.max(player.velocityX - 0.8, -5);
-            } else if (keys['ArrowRight']) {
-                player.velocityX = Math.min(player.velocityX + 0.8, 5);
-            } else {
-                player.velocityX *= 0.85;
-            }
-
-            player.x += player.velocityX;
-            player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
-
-            // ジャンプ処理
-            player.velocityY += 0.6;
-            player.y += player.velocityY;
-
-            const groundY = canvas.height - 80;
-            if (player.y >= groundY) {
-                player.y = groundY;
-                player.velocityY = 0;
-                player.jumping = false;
-                player.jumpCount = 0;
-            }
-
-            // しゃがみタイマー処理
-            if (player.slideTimer > 0) {
-                player.slideTimer--;
-                if (player.slideTimer <= 0) {
-                    player.sliding = false;
-                }
-            }
-        }
-
-        function updateObstacles() {
-            // 障害物移動
-            obstacles = obstacles.filter(obs => {
-                obs.x -= gameSpeed;
-                if (obs.x + obs.width < 0) {
-                    if (obs.type !== 'item') score += 10;
-                    return false;
-                }
-                return true;
-            });
-
-            // 背景ビル移動
-            backgroundBuildings.forEach(building => {
-                building.x -= gameSpeed * 0.3;
-                if (building.x + building.width < 0) {
-                    building.x = canvas.width + Math.random() * 200;
-                }
-            });
-
-            // 新しい障害物生成
-            const settings = stageSettings[currentStage];
-            if (Math.random() < settings.obsChance) {
-                generateObstacle();
-            }
-            if (Math.random() < settings.highObsChance) {
-                generateHighObstacle();
-            }
-            if (Math.random() < 0.008) {
-                generateItem();
-            }
-        }
-
-        function generateObstacle() {
-            const types = ['box', 'laser'];
-            const type = types[Math.floor(Math.random() * types.length)];
+            obstacles = [];
+            particles = [];
             
-            if (type === 'box') {
-                obstacles.push({
-                    type: 'box',
-                    x: canvas.width,
-                    y: canvas.height - 60,
-                    width: 40,
-                    height: 40,
-                    color: '#ff3333'
-                });
+            this.generateBgElements(lvl);
+            
+            ui.stage.innerText = lvl;
+            ui.start.classList.add('hidden');
+            ui.gameOver.classList.add('hidden');
+            ui.clear.classList.add('hidden');
+            ui.ending.classList.add('hidden');
+            
+            this.loop();
+        },
+
+        retryStage: function() {
+            this.startStage(state.stage);
+        },
+
+        nextStage: function() {
+            // エンディング判定
+            if (state.stage < 5) {
+                this.startStage(state.stage + 1);
             } else {
-                obstacles.push({
-                    type: 'laser',
-                    x: canvas.width,
-                    y: canvas.height - 100,
-                    width: 20,
-                    height: 80,
-                    color: '#ff00ff'
-                });
+                ui.clear.classList.add('hidden');
+                ui.ending.classList.remove('hidden');
+                audioSys.stopBGM();
             }
-        }
+        },
 
-        function generateHighObstacle() {
-            obstacles.push({
-                type: 'high',
-                x: canvas.width,
-                y: canvas.height - 160,
-                width: 100,
-                height: 40,
-                color: '#ff9900'
-            });
-        }
-
-        function generateItem() {
-            obstacles.push({
-                type: 'item',
-                x: canvas.width,
-                y: canvas.height - 120 - Math.random() * 40,
-                width: 30,
-                height: 30,
-                color: '#00ff00'
-            });
-        }
-
-        // 衝突判定
-        function checkCollisions() {
-            const playerRect = {
-                x: player.x,
-                y: player.sliding && player.slideTimer > 0 ? player.y + 20 : player.y,
-                width: player.sliding && player.slideTimer > 0 ? player.width + 10 : player.width,
-                height: player.sliding && player.slideTimer > 0 ? 20 : player.height
-            };
-
-            obstacles.forEach((obs, index) => {
-                if (playerRect.x < obs.x + obs.width &&
-                    playerRect.x + playerRect.width > obs.x &&
-                    playerRect.y < obs.y + obs.height &&
-                    playerRect.y + playerRect.height > obs.y) {
-                    
-                    if (obs.type === 'item') {
-                        score += 50;
-                        obstacles.splice(index, 1);
-                        createParticles(obs.x + 15, obs.y + 15);
-                    } else {
-                        gameOver();
-                    }
-                }
-            });
-        }
-
-        function createParticles(x, y) {
-            for (let i = 0; i < 8; i++) {
-                particles.push({
-                    x: x,
-                    y: y,
-                    vx: (Math.random() - 0.5) * 5,
-                    vy: (Math.random() - 0.5) * 5,
-                    life: 30,
-                    color: '#00ff00'
-                });
-            }
-        }
-
-        function updateParticles() {
-            ctx.save();
-            particles = particles.filter(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life--;
-                
-                ctx.globalAlpha = p.life / 30;
-                ctx.fillStyle = p.color;
-                ctx.fillRect(p.x, p.y, 3, 3);
-                
-                return p.life > 0;
-            });
-            ctx.restore();
-        }
-
-        // ゲームループ
-        function gameLoop() {
-            if (!gameRunning) return;
-
+        loop: function() {
+            if (!state.running) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            this.update();
+            this.draw();
+            requestAnimationFrame(() => this.loop());
+        },
 
-            drawBackground();
-            updatePlayer();
-            drawPlayer();
-            updateObstacles();
-            drawObstacles();
-            updateParticles();
-            checkCollisions();
-
-            updateUI();
-
-            if (score >= targetScore) {
-                if (currentStage >= 5) {
-                    victory();
-                } else {
-                    stageClear();
-                }
+        update: function() {
+            // Timer
+            state.timeLeft -= 1/60;
+            ui.timer.innerText = Math.max(0, state.timeLeft).toFixed(2);
+            if (state.timeLeft <= 0) {
+                this.stageClear();
                 return;
             }
 
-            requestAnimationFrame(gameLoop);
-        }
+            state.frameCount++;
+            const config = STAGE_CONFIG[state.stage];
+            
+            this.updatePlayer();
+            this.updateBg(config.speed * 0.5);
+            
+            state.spawnTimer--;
+            if (state.spawnTimer <= 0) {
+                this.spawnObstacle(config);
+                state.spawnTimer = Math.floor(Math.random() * (config.maxGap - config.minGap + 1)) + config.minGap;
+            }
 
-        function updateUI() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('stage').textContent = currentStage;
-            document.getElementById('target').textContent = targetScore;
-        }
+            this.updateObstacles(config.speed);
+            this.updateParticles();
+        },
 
-        function gameOver() {
-            gameRunning = false;
-            document.getElementById('resultTitle').textContent = 'GAME OVER';
-            document.getElementById('finalScore').textContent = score;
-            document.getElementById('gameOverScreen').classList.remove('hidden');
-        }
+        updatePlayer: function() {
+            const speed = 6;
+            const groundY = canvas.height - 80;
 
-        function victory() {
-            gameRunning = false;
-            document.getElementById('resultTitle').textContent = '🎉 COMPLETE! 🎉';
-            document.getElementById('finalScore').textContent = score;
-            document.getElementById('gameOverScreen').classList.remove('hidden');
-        }
+            if (state.keys['ArrowLeft']) player.x -= speed;
+            if (state.keys['ArrowRight']) player.x += speed;
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
 
-        function stageClear() {
-            gameRunning = false;
-            document.getElementById('clearScore').textContent = score;
-            document.getElementById('stageClearScreen').classList.remove('hidden');
-        }
+            player.vy += 0.9;
+            player.y += player.vy;
 
-        function restartGame() {
-            startGame();
-        }
+            if (player.y >= groundY) {
+                player.y = groundY;
+                player.vy = 0;
+                player.jumpCount = 0; 
+            }
 
-        function nextStage() {
-            document.getElementById('stageClearScreen').classList.add('hidden');
-            gameRunning = true;
-            currentStage++;
-            resetStage();
-            gameLoop();
-        }
+            player.isSliding = state.keys['ArrowDown'];
+            player.height = player.isSliding ? 20 : 40;
+            if (player.isSliding && player.y >= groundY) player.y = groundY + 20;
+        },
 
-        // 操作処理
-        function jump() {
-            if (player.jumpCount < player.maxJumps && !player.sliding) {
-                player.velocityY = -12;
-                player.jumping = true;
+        jump: function() {
+            if (player.jumpCount < player.maxJumps) {
+                if(player.jumpCount === 0) {
+                    player.vy = -14; 
+                } else {
+                    player.vy = -12; 
+                    this.createParticles(player.x + 20, player.y + 40, '#00ffff', 5); 
+                }
                 player.jumpCount++;
-                createParticles(player.x + 20, player.y + 40);
+                player.isSliding = false; 
+                audioSys.playJump();
             }
-        }
+        },
 
-        function slide() {
-            if (!player.jumping && player.slideTimer <= 0) {
-                player.sliding = true;
-                player.slideTimer = 30; // 0.5秒間しゃがみ
+        spawnObstacle: function(config) {
+            const r = Math.random();
+            let obs = { x: canvas.width, w: 40, h: 40, color: '#ff3333' };
+            
+            if (r < 0.4) { 
+                obs.y = canvas.height - 80;
+                obs.type = 'low';
+            } else if (r < 0.7) { 
+                obs.y = canvas.height - 150;
+                obs.color = '#ffff00';
+                obs.type = 'high';
+            } else { 
+                obs.w = 20; obs.h = 90;
+                obs.y = canvas.height - 130;
+                obs.color = '#ff00ff';
+                obs.type = 'wall';
             }
-        }
+            obstacles.push(obs);
+        },
 
-        // キーボード操作
-        document.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
-            if (gameRunning) {
-                if (e.key === ' ' || e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    jump();
+        updateObstacles: function(speed) {
+            obstacles.forEach((obs, i) => {
+                obs.x -= speed;
+                
+                const pBox = { 
+                    x: player.x + 8, y: player.y + 8, 
+                    w: player.width - 16, h: player.height - 16 
+                };
+                
+                if (pBox.x < obs.x + obs.w && pBox.x + pBox.w > obs.x &&
+                    pBox.y < obs.y + obs.h && pBox.y + pBox.h > obs.y) {
+                    this.gameOver();
                 }
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    slide();
-                }
+                
+                if (obs.x + obs.w < 0) obstacles.splice(i, 1);
+            });
+        },
+
+        // --- Visuals (Background Generation Updated) ---
+        generateBgElements: function(stage) {
+            bgObjects = [];
+            const type = STAGE_CONFIG[stage].bgType;
+            // ステージごとの密度調整
+            const count = (type === 'town') ? 40 : 25;
+            for(let i=0; i<count; i++) {
+                this.spawnBgObject(type, Math.random() * canvas.width);
             }
-        });
+        },
 
-        document.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
-        });
+        spawnBgObject: function(type, xVal) {
+            let obj = { x: xVal, w: 0, h: 0, type: type, color: '#fff' };
+            const ground = canvas.height - 40;
 
-        // モバイル操作
-        const leftBtn = document.getElementById('leftBtn');
-        const rightBtn = document.getElementById('rightBtn');
-        const jumpBtn = document.getElementById('jumpBtn');
-        const slideBtn = document.getElementById('slideBtn');
+            if (type === 'city') {
+                // Stage 1: Standard Cyberpunk City
+                obj.w = 40 + Math.random() * 60; obj.h = 100 + Math.random() * 200;
+                obj.y = ground - obj.h; obj.color = `hsl(220, 40%, ${10+Math.random()*15}%)`;
+                obj.accent = '#00ffff';
+                obj.windows = Math.random() > 0.4;
 
-        // タッチイベント用のヘルパー
-        function addTouchEvent(elem, keyDown, keyUp) {
-            elem.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                if (keyDown) keyDown();
+            } else if (type === 'port') {
+                // Stage 2: Cyber Harbor (Containers & Cranes)
+                if (Math.random() < 0.2) {
+                    // Crane
+                    obj.w = 20; obj.h = 150 + Math.random() * 50;
+                    obj.y = ground - obj.h;
+                    obj.color = '#111';
+                    obj.accent = '#ffaa00'; // Neon Orange
+                    obj.subType = 'crane';
+                } else {
+                    // Container
+                    obj.w = 80 + Math.random() * 40; obj.h = 40 + Math.random() * 20;
+                    obj.y = ground - obj.h - (Math.random()>0.4 ? 40:0); // Stacked
+                    obj.color = Math.random()>0.5 ? '#002233' : '#331111'; // Dark Cyan or Rust
+                    obj.accent = '#ff9900'; // Orange Warning lights
+                    obj.subType = 'container';
+                }
+
+            } else if (type === 'town') {
+                // Stage 3: Cyber Slums (High density)
+                obj.w = 40 + Math.random() * 20; 
+                obj.h = 60 + Math.random() * 100;
+                obj.y = ground - obj.h; 
+                obj.color = '#1a051a'; // Dark Purple
+                obj.accent = '#ff00ff'; // Neon Pink
+                obj.subType = 'house';
+
+            } else if (type === 'factory') {
+                // Stage 4: Toxic Factory
+                obj.w = 30 + Math.random() * 60; 
+                obj.h = 120 + Math.random() * 150; 
+                obj.y = ground - obj.h; 
+                obj.color = '#051105'; // Dark Green/Black
+                obj.accent = '#00ff33'; // Toxic Green
+                obj.subType = 'plant';
+                obj.pipe = Math.random() > 0.5;
+
+            } else if (type === 'mars') {
+                // Stage 5: Mars (Unchanged)
+                obj.w = 10 + Math.random()*80; obj.h = 20 + Math.random()*60; 
+                obj.y = ground; obj.color = '#843'; obj.subType = 'rock';
+            }
+            bgObjects.push(obj);
+        },
+
+        updateBg: function(speed) {
+            bgObjects.forEach(obj => {
+                obj.x -= speed;
+                if(obj.x + obj.w < -50) {
+                    // Reset Logic
+                    this.spawnBgObject(obj.type, canvas.width + Math.random()*50);
+                    // 古いオブジェクトを削除して新しいのを追加する方が綺麗だが、
+                    // 簡易的に位置とプロパティを再設定する（配列の入れ替え回避）
+                    const newObj = bgObjects[bgObjects.length-1]; // spawnBgObjectで末尾に追加されたものを取得
+                    Object.assign(obj, newObj); // プロパティをコピー
+                    bgObjects.pop(); // 追加された分を消す
+                }
             });
-            elem.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                if (keyUp) keyUp();
+        },
+
+        draw: function() {
+            const w = canvas.width, h = canvas.height;
+            
+            // BG Colors (Atmosphere)
+            const colors = {
+                1: ['#050510', '#111'],            // City (Blue/Black)
+                2: ['#020210', '#001a1a'],         // Port (Deep Sea/Oil)
+                3: ['#100010', '#220022'],         // Town (Dark Purple)
+                4: ['#000a00', '#0a1a0a'],         // Factory (Dark Green)
+                5: ['#310', '#521']                // Mars (Red)
+            };
+            const [sky, gnd] = colors[state.stage] || colors[1];
+
+            ctx.fillStyle = sky; ctx.fillRect(0,0,w,h);
+            ctx.fillStyle = gnd; ctx.fillRect(0, h-40, w, 40);
+
+            // Draw BG Objects with Details
+            bgObjects.forEach(obj => {
+                ctx.fillStyle = obj.color;
+                
+                if(obj.subType === 'rock') {
+                    // Mars Rocks
+                    ctx.beginPath(); ctx.arc(obj.x, obj.y, obj.w/2, 0, Math.PI, true); ctx.fill();
+                } else if (obj.subType === 'crane') {
+                    // Port Crane
+                    ctx.fillRect(obj.x + 5, obj.y, 10, obj.h); // Pillar
+                    ctx.strokeStyle = obj.accent; ctx.lineWidth = 2;
+                    ctx.beginPath(); 
+                    ctx.moveTo(obj.x, obj.y); ctx.lineTo(obj.x-40, obj.y+20); // Arm
+                    ctx.stroke();
+                    // Light
+                    ctx.fillStyle = obj.accent; ctx.fillRect(obj.x+5, obj.y, 4, 4);
+
+                } else if (obj.subType === 'container') {
+                    // Port Container
+                    ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+                    ctx.strokeStyle = obj.accent; ctx.lineWidth = 1;
+                    ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+                    // Diagonal detail
+                    ctx.beginPath(); ctx.moveTo(obj.x, obj.y); ctx.lineTo(obj.x+obj.w, obj.y+obj.h); ctx.stroke();
+
+                } else if (obj.subType === 'house') {
+                    // Residential Units (Capsule style)
+                    ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+                    ctx.fillStyle = obj.accent; // Windows
+                    for(let wy=obj.y+5; wy<obj.y+obj.h-5; wy+=12) {
+                        ctx.fillRect(obj.x+4, wy, obj.w-8, 6);
+                    }
+
+                } else if (obj.subType === 'plant') {
+                    // Factory with Pipes
+                    ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+                    if (obj.pipe) {
+                        ctx.strokeStyle = '#555'; ctx.lineWidth = 4;
+                        ctx.beginPath(); ctx.moveTo(obj.x-10, obj.y+obj.h-20); ctx.lineTo(obj.x+obj.w+10, obj.y+obj.h-20); ctx.stroke();
+                    }
+                    // Toxic Light
+                    ctx.fillStyle = obj.accent; 
+                    ctx.fillRect(obj.x + obj.w/2 - 2, obj.y + 10, 4, obj.h - 20);
+
+                } else {
+                    // Default City Building
+                    ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+                    if(obj.windows) {
+                        ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+                        for(let wy=obj.y+10; wy<obj.y+obj.h-10; wy+=20) ctx.fillRect(obj.x+10, wy, 5, 10);
+                    }
+                }
             });
-            elem.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                if (keyDown) keyDown();
+
+            // Grid Floor
+            ctx.strokeStyle = (state.stage === 5) ? '#ff5500' : '#00ffff'; 
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(0, h-40); ctx.lineTo(w, h-40); ctx.stroke();
+
+            // Player
+            ctx.save();
+            ctx.shadowBlur = 15; ctx.shadowColor = player.color;
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            // Double Jump Visual (Thrusters)
+            if(player.jumpCount > 0) {
+                ctx.fillStyle = '#ff9900';
+                ctx.fillRect(player.x + 10, player.y + player.height, 20, 5);
+            }
+            ctx.restore();
+
+            // Obstacles
+            obstacles.forEach(obs => {
+                ctx.save();
+                ctx.shadowBlur = 10; ctx.shadowColor = obs.color;
+                ctx.fillStyle = obs.color;
+                ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+                // Detail
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(obs.x+5, obs.y+5, obs.w-10, obs.h-10);
+                ctx.restore();
             });
-            elem.addEventListener('mouseup', (e) => {
-                e.preventDefault();
-                if (keyUp) keyUp();
+
+            // Particles
+            this.drawParticles();
+        },
+
+        createParticles: function(x, y, c, n) {
+            for(let i=0; i<n; i++) particles.push({x, y, vx:(Math.random()-.5)*10, vy:(Math.random()-.5)*10, life:20, c});
+        },
+        updateParticles: function() {
+            particles = particles.filter(p => { p.x+=p.vx; p.y+=p.vy; p.life--; return p.life>0; });
+        },
+        drawParticles: function() {
+            particles.forEach(p => { ctx.globalAlpha=p.life/20; ctx.fillStyle=p.c; ctx.fillRect(p.x,p.y,4,4); });
+            ctx.globalAlpha=1;
+        },
+
+        gameOver: function() {
+            state.running = false;
+            this.createParticles(player.x, player.y, '#f00', 30);
+            this.draw();
+            setTimeout(() => ui.gameOver.classList.remove('hidden'), 500);
+        },
+
+        stageClear: function() {
+            state.running = false;
+            ui.clear.classList.remove('hidden');
+        },
+
+        bindControls: function() {
+            document.addEventListener('keydown', e => {
+                state.keys[e.key] = true;
+                if(state.running) {
+                    if(e.key===' ' || e.key==='ArrowUp') { e.preventDefault(); this.jump(); }
+                    if(e.key==='ArrowDown') e.preventDefault();
+                }
             });
+            document.addEventListener('keyup', e => state.keys[e.key] = false);
+
+            const touch = (id, k, fn) => {
+                const el = document.getElementById(id);
+                const s = (e) => { e.preventDefault(); state.keys[k]=true; if(fn) fn(); };
+                const e_ = (e) => { e.preventDefault(); state.keys[k]=false; };
+                el.addEventListener('touchstart', s); el.addEventListener('touchend', e_);
+                el.addEventListener('mousedown', s); el.addEventListener('mouseup', e_);
+            };
+            touch('btnLeft', 'ArrowLeft');
+            touch('btnRight', 'ArrowRight');
+            touch('btnJump', 'ArrowUp', ()=>this.jump());
+            touch('btnSlide', 'ArrowDown');
         }
+    };
 
-        // 移動ボタン
-        addTouchEvent(leftBtn, 
-            () => keys['ArrowLeft'] = true,
-            () => keys['ArrowLeft'] = false
-        );
-        addTouchEvent(rightBtn, 
-            () => keys['ArrowRight'] = true,
-            () => keys['ArrowRight'] = false
-        );
+    window.onload = () => game.init();
 
-        // アクションボタン
-        addTouchEvent(jumpBtn, () => gameRunning && jump());
-        addTouchEvent(slideBtn, () => gameRunning && slide());
-
-        // 初期化
-        window.addEventListener('resize', resizeCanvas);
-        window.addEventListener('load', () => {
-            resizeCanvas();
-        });
-
-        // 初期化実行
-        resizeCanvas();
-    </script>
+</script>
 </body>
 </html>
