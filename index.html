@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ROBOT RUNNER: NEON SURVIVOR - POSITION FIX</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap');
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-touch-callout: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        background-color: #050510;
+        color: #fff;
+        font-family: 'M PLUS Rounded 1c', sans-serif;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    #gameContainer {
+        position: relative;
+        width: 100%;
+        max-width: 900px;
+        height: 100vh;
+        max-height: 500px;
+        background: #0a0a1a;
+        border: 4px solid #00ffff;
+        border-radius: 20px;
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+        overflow: hidden;
+    }
+
+    canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* UI Overlay */
+    .ui-layer {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    /* Top HUD */
+    .hud-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: rgba(0, 20, 40, 0.8);
+        border-bottom: 2px solid #00ffff;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    }
+    
+    .game-title {
+        font-size: 1.5rem;
+        color: #00ffff;
+        text-shadow: 0 0 10px #00ffff;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .status-box {
+        text-align: right;
+        font-size: 1rem;
+        color: #ff66aa;
+    }
+
+    /* Message Screens */
+    .message-screen {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(10, 10, 30, 0.95);
+        border: 3px solid #00ffff;
+        padding: 40px;
+        text-align: center;
+        border-radius: 20px;
+        pointer-events: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        z-index: 100;
+        min-width: 320px;
+        box-shadow: 0 0 50px rgba(0, 255, 255, 0.4);
+    }
+
+    h1 {
+        font-size: 2rem;
+        color: #00ffff;
+        margin-bottom: 10px;
+    }
+    
+    p { font-size: 1.1rem; color: #ddd; }
+
+    .btn-main {
+        background: #00ffff;
+        border: none;
+        color: #000;
+        padding: 15px 40px;
+        font-family: 'M PLUS Rounded 1c', sans-serif;
+        font-size: 1.3rem;
+        font-weight: bold;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: 0.2s;
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+    }
+    .btn-main:active { transform: scale(0.95); }
+
+    .hidden { display: none !important; }
+
+    /* Bottom Controls Area */
+    .controls-area {
+        width: 100%;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        pointer-events: none;
+        position: absolute;
+        bottom: 0;
+    }
+
+    .ctrl-group {
+        display: flex;
+        gap: 15px;
+        pointer-events: auto;
+    }
+
+    .ctrl-btn {
+        height: 60px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #fff;
+        border-radius: 15px;
+        box-shadow: 0 4px 0 rgba(0,0,0,0.5);
+        cursor: pointer;
+        transition: transform 0.1s, box-shadow 0.1s;
+        border: 2px solid rgba(255,255,255,0.2);
+    }
+    .ctrl-btn:active {
+        transform: translateY(4px);
+        box-shadow: 0 0 0 rgba(0,0,0,0);
+    }
+
+    .btn-blue {
+        background: linear-gradient(to bottom, #00ccff, #0099cc);
+        width: 70px;
+    }
+    .btn-green {
+        background: linear-gradient(to bottom, #00dd66, #00aa44);
+        width: 110px;
+    }
+    .btn-orange {
+        background: linear-gradient(to bottom, #ff7733, #dd5511);
+        width: 110px;
+    }
+
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="ui-layer">
+        <div class="hud-bar">
+            <div class="game-title">
+                <span>🤖</span> ロボットランナー
+            </div>
+            <div class="status-box">
+                <div>ステージ: <span id="stageNum">1</span> / 5</div>
+                <div>TIME: <span id="timer">60.00</span></div>
+            </div>
+        </div>
+
+        <div class="controls-area">
+            <div class="ctrl-group">
+                <div class="ctrl-btn btn-blue" id="btnLeft">←</div>
+                <div class="ctrl-btn btn-blue" id="btnRight">→</div>
+            </div>
+            <div class="ctrl-group">
+                <div class="ctrl-btn btn-green" id="btnJump">ジャンプ</div>
+                <div class="ctrl-btn btn-orange" id="btnSlide">スライド</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="startScreen" class="message-screen">
+        <h1>ROBOT RUNNER</h1>
+        <p>ステージを駆け抜けろ！</p>
+        <button class="btn-main" onclick="game.startStage(1)">START</button>
+    </div>
+
+    <div id="gameOverScreen" class="message-screen hidden">
+        <h1 style="color:#ff3366;">GAME OVER</h1>
+        <p>障害物に衝突しました</p>
+        <button class="btn-main" onclick="game.retryStage()">RETRY</button>
+    </div>
+
+    <div id="stageClearScreen" class="message-screen hidden">
+        <h1 style="color:#33ff33;">STAGE CLEAR!</h1>
+        <p>エリア確保完了</p>
+        <button class="btn-main" onclick="game.nextStage()">NEXT STAGE</button>
+    </div>
+
+    <div id="endingScreen" class="message-screen hidden">
+        <h1 style="color:#ffff00;">MISSION COMPLETE</h1>
+        <p>全てのステージをクリアしました！<br>君こそ最高のランナーだ！</p>
+        <button class="btn-main" onclick="location.reload()">TITLE</button>
+    </div>
+</div>
+
+<script>
+    // Audio System
+    const audioSys = {
+        bgm: new Audio('audio/run.mp3'),
+        jump: new Audio('audio/tobu.mp3'),
+        init: function() {
+            this.bgm.loop = true;
+            this.bgm.volume = 0.4;
+            this.jump.volume = 0.5;
+        },
+        playBGM: function() { this.bgm.play().catch(()=>{}); },
+        stopBGM: function() { this.bgm.pause(); this.bgm.currentTime = 0; },
+        playJump: function() { 
+            this.jump.currentTime = 0; 
+            this.jump.play().catch(()=>{}); 
+        }
+    };
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // UI References
+    const ui = {
+        start: document.getElementById('startScreen'),
+        gameOver: document.getElementById('gameOverScreen'),
+        clear: document.getElementById('stageClearScreen'),
+        ending: document.getElementById('endingScreen'),
+        stage: document.getElementById('stageNum'),
+        timer: document.getElementById('timer')
+    };
+
+    // --- Configuration & Themes (画像に合わせて色を調整) ---
+    const TARGET_TIME = 60.0;
+    
+    const THEMES = {
+        1: { name: "CITY",    bgColor: '#050510', type: 'city',    colors: ['#1a1a40', '#2a2a60', '#3a2a70'] },
+        2: { name: "PORT",    bgColor: '#001020', type: 'port',    colors: ['#003344', '#004455', '#223344', '#cc3333'] }, // コンテナの赤を追加
+        3: { name: "TOWN",    bgColor: '#050515', type: 'town',    colors: ['#222233', '#333344', '#1a1a2e'] },
+        4: { name: "FACTORY", bgColor: '#100510', type: 'factory', colors: ['#201020', '#302030', '#402040'] },
+        5: { name: "MARS",    bgColor: '#331000', type: 'mars',    colors: ['#552010', '#773010', '#441005'] }
+    };
+
+    const STAGE_DATA = {
+        1: { speed: 5,   minGap: 100, maxGap: 150 },
+        2: { speed: 6,   minGap: 90,  maxGap: 130 },
+        3: { speed: 7.5, minGap: 70,  maxGap: 110 },
+        4: { speed: 9,   minGap: 50,  maxGap: 90 },
+        5: { speed: 11,  minGap: 40,  maxGap: 70 }
+    };
+
+    // Game State
+    let state = {
+        running: false,
+        stage: 1,
+        timeLeft: TARGET_TIME,
+        keys: {},
+        spawnTimer: 0
+    };
+
+    let player = {
+        x: 100, y: 0, width: 40, height: 40,
+        vy: 0, 
+        jumpCount: 0,     
+        maxJumps: 2,      
+        isSliding: false,
+        blinkTimer: 0
+    };
+
+    let obstacles = [];
+    let bgObjects = [];
+    let stars = [];
+    let particles = []; 
+
+    const game = {
+        init: function() {
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            this.bindControls();
+            audioSys.init();
+            
+            // 星（または塵）の生成
+            for(let i=0; i<50; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height * 0.6,
+                    size: Math.random() * 2 + 1,
+                    blink: Math.random() * 100
+                });
+            }
+            
+            this.generateBgElements(1);
+            this.draw();
+        },
+
+        resize: function() {
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+            player.y = canvas.height - 140; 
+        },
+
+        startStage: function(lvl) {
+            audioSys.playBGM();
+            state.stage = lvl;
+            state.running = true;
+            state.timeLeft = TARGET_TIME;
+            state.spawnTimer = 60; 
+            
+            player.x = 100;
+            player.y = canvas.height - 140;
+            player.vy = 0;
+            player.jumpCount = 0;
+            
+            obstacles = [];
+            particles = [];
+            this.generateBgElements(lvl);
+            
+            ui.stage.innerText = lvl;
+            ui.start.classList.add('hidden');
+            ui.gameOver.classList.add('hidden');
+            ui.clear.classList.add('hidden');
+            ui.ending.classList.add('hidden');
+            
+            this.loop();
+        },
+
+        retryStage: function() { this.startStage(state.stage); },
+        
+        nextStage: function() {
+            if (state.stage < 5) {
+                this.startStage(state.stage + 1);
+            } else {
+                ui.clear.classList.add('hidden');
+                ui.ending.classList.remove('hidden');
+                audioSys.stopBGM();
+            }
+        },
+
+        loop: function() {
+            if (!state.running) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            this.update();
+            this.draw();
+            requestAnimationFrame(() => this.loop());
+        },
+
+        update: function() {
+            state.timeLeft -= 1/60;
+            ui.timer.innerText = Math.max(0, state.timeLeft).toFixed(2);
+            if (state.timeLeft <= 0) {
+                this.stageClear();
+                return;
+            }
+
+            const data = STAGE_DATA[state.stage];
+            this.updatePlayer();
+            this.updateParticles();
+            this.updateBg(data.speed * 0.5);
+            
+            state.spawnTimer--;
+            if (state.spawnTimer <= 0) {
+                this.spawnObstacle();
+                state.spawnTimer = Math.floor(Math.random() * (data.maxGap - data.minGap + 1)) + data.minGap;
+            }
+
+            this.updateObstacles(data.speed);
+        },
+
+        updatePlayer: function() {
+            const speed = 7;
+            const groundY = canvas.height - 100;
+
+            if (state.keys['ArrowLeft']) player.x -= speed;
+            if (state.keys['ArrowRight']) player.x += speed;
+            if (player.x < 10) player.x = 10;
+            if (player.x > canvas.width - player.width - 10) player.x = canvas.width - player.width - 10;
+
+            player.vy += 1.6;
+            if (state.keys['ArrowDown'] && player.y < groundY - 40) {
+                player.vy += 2.0; 
+            }
+            player.y += player.vy;
+
+            if (player.y >= groundY - 40) {
+                player.y = groundY - 40;
+                player.vy = 0;
+                player.jumpCount = 0; 
+            }
+
+            player.isSliding = state.keys['ArrowDown'];
+            player.height = player.isSliding ? 20 : 40; 
+            
+            if(player.isSliding && player.y >= groundY - 40) {
+                player.y = groundY - 20; 
+                this.spawnSpark(player.x + Math.random()*player.width, player.y + 15);
+            }
+            
+            player.blinkTimer++;
+        },
+
+        jump: function() {
+            if (player.jumpCount < player.maxJumps) {
+                player.vy = (player.jumpCount === 0) ? -22 : -20;
+                player.jumpCount++;
+                player.isSliding = false; 
+                audioSys.playJump();
+                for(let i=0; i<5; i++) {
+                    this.spawnSpark(player.x + 20, player.y + 40);
+                }
+            }
+        },
+
+        spawnSpark: function(x, y) {
+            particles.push({
+                x: x, y: y,
+                vx: (Math.random() - 0.5) * 10 - 5,
+                vy: (Math.random() - 0.5) * 5,
+                life: 15,
+                color: '#ffff00'
+            });
+        },
+        
+        updateParticles: function() {
+            for(let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                if(p.life <= 0) particles.splice(i, 1);
+            }
+        },
+
+        spawnObstacle: function() {
+            const r = Math.random();
+            let obs = { x: canvas.width, w: 50, h: 50, type: 'box', color: '#ff0066' };
+            const groundY = canvas.height - 100;
+            
+            if (r < 0.4) { 
+                obs.y = groundY - 50;
+            } else if (r < 0.7) { 
+                obs.y = groundY - 90; 
+                obs.h = 50; 
+            } else { 
+                obs.w = 30; obs.h = 120;
+                obs.y = groundY - 120;
+                obs.type = 'wall';
+                obs.color = '#aa00ff';
+            }
+            obstacles.push(obs);
+        },
+
+        updateObstacles: function(speed) {
+            obstacles.forEach((obs, i) => {
+                obs.x -= speed;
+                const padding = 10;
+                const pBox = { x: player.x+padding, y: player.y+padding, w: Math.max(1, player.width-padding*2), h: Math.max(1, player.height-padding*1.5) };
+                
+                if (pBox.x < obs.x + obs.w && pBox.x + pBox.w > obs.x &&
+                    pBox.y < obs.y + obs.h && pBox.y + pBox.h > obs.y) {
+                    this.gameOver();
+                }
+                if (obs.x + obs.w < -50) obstacles.splice(i, 1);
+            });
+        },
+
+        // --- 背景生成ロジックの大幅改修 ---
+        generateBgElements: function(stage) {
+            bgObjects = [];
+            const theme = THEMES[stage];
+            const colors = theme.colors;
+            const count = 12; 
+            const groundY = canvas.height - 100;
+
+            for(let i=0; i<count; i++) {
+                let obj = {
+                    x: i * (canvas.width / 8) + Math.random() * 50,
+                    w: 60 + Math.random() * 80,
+                    h: 100 + Math.random() * 150,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    type: 'normal',
+                    windows: []
+                };
+
+                // ステージごとの形状変更
+                if (theme.type === 'port') {
+                    // 港: クレーンかコンテナ
+                    if (Math.random() > 0.6) {
+                        obj.type = 'crane';
+                        obj.w = 40; obj.h = 250 + Math.random()*100;
+                        obj.color = '#112233'; 
+                    } else {
+                        obj.type = 'container';
+                        obj.w = 120; obj.h = 80;
+                    }
+                } else if (theme.type === 'town') {
+                    // 町: 家（三角屋根）
+                    obj.type = 'house';
+                    obj.h = 80 + Math.random() * 60;
+                    obj.w = 100 + Math.random() * 50;
+                } else if (theme.type === 'factory') {
+                    // 工場: 煙突付き
+                    obj.type = 'factory';
+                    obj.w = 100 + Math.random() * 100;
+                } else if (theme.type === 'mars') {
+                    // 火星: 山
+                    obj.type = 'mountain';
+                    obj.w = 200 + Math.random() * 200;
+                    obj.h = 100 + Math.random() * 200;
+                }
+
+                obj.y = groundY - obj.h;
+                
+                // 窓の生成 (火星とクレーン以外)
+                if (obj.type !== 'mars' && obj.type !== 'crane' && Math.random() > 0.3) {
+                    const rows = Math.floor(obj.h / 25);
+                    const cols = Math.floor(obj.w / 20);
+                    for(let r=1; r<rows; r++) {
+                        for(let c=1; c<cols; c++) {
+                            if(Math.random() > 0.4) {
+                                obj.windows.push({ x: c*20, y: r*25 });
+                            }
+                        }
+                    }
+                }
+                bgObjects.push(obj);
+            }
+            // 並び替え（背の低いものを手前に）
+            bgObjects.sort((a,b) => a.h - b.h);
+        },
+
+        updateBg: function(speed) {
+            bgObjects.forEach(obj => {
+                obj.x -= speed;
+                // 画面外に出たら右端に戻す＆形状リセット
+                if(obj.x + obj.w < -200) {
+                    obj.x = canvas.width + Math.random() * 100;
+                    // ステージに合わせて再設定
+                    const theme = THEMES[state.stage];
+                    if(theme.type === 'mars') {
+                        obj.w = 200 + Math.random()*200;
+                        obj.h = 100 + Math.random()*200;
+                    } else if (theme.type === 'port') {
+                        if(Math.random() > 0.6) {
+                             obj.type = 'crane'; obj.h = 250; obj.w=40; 
+                        } else { 
+                             obj.type = 'container'; obj.h = 80; obj.w=120;
+                             obj.color = theme.colors[Math.floor(Math.random()*theme.colors.length)];
+                        }
+                    } else {
+                        obj.h = 100 + Math.random()*200;
+                        obj.w = 60 + Math.random()*80;
+                    }
+                    obj.y = (canvas.height - 100) - obj.h;
+                }
+            });
+        },
+
+        draw: function() {
+            const w = canvas.width, h = canvas.height;
+            const theme = THEMES[state.stage];
+            const groundY = h - 100;
+
+            // 1. Background Fill
+            // 港(Port)の場合はグラデーションにしてみる
+            if (theme.type === 'port') {
+                const grad = ctx.createLinearGradient(0, 0, 0, h);
+                grad.addColorStop(0, '#000510');
+                grad.addColorStop(1, '#002030');
+                ctx.fillStyle = grad;
+            } else {
+                ctx.fillStyle = theme.bgColor;
+            }
+            ctx.fillRect(0,0,w,h);
+
+            // 2. Stars / Dust
+            ctx.fillStyle = "#ffffff";
+            stars.forEach(s => {
+                s.blink++;
+                const opacity = (Math.sin(s.blink * 0.1) + 1) / 2;
+                ctx.globalAlpha = opacity;
+                ctx.fillRect(s.x, s.y, s.size, s.size);
+            });
+            ctx.globalAlpha = 1.0;
+
+            // 火星の場合、空に地球を描く
+            if (theme.type === 'mars') {
+                ctx.fillStyle = '#2244ff';
+                ctx.beginPath(); ctx.arc(w - 100, 80, 20, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = '#22aa22'; // 大陸
+                ctx.beginPath(); ctx.arc(w - 105, 75, 8, 0, Math.PI*2); ctx.fill();
+            }
+
+            // 3. BG Objects (ステージごとの描画)
+            bgObjects.forEach(obj => {
+                ctx.fillStyle = obj.color;
+
+                if (obj.type === 'crane') {
+                    // クレーンの描画
+                    ctx.fillRect(obj.x + 10, obj.y, 10, obj.h); // 柱
+                    ctx.fillRect(obj.x - 20, obj.y + 20, 80, 10); // アーム
+                    ctx.beginPath(); 
+                    ctx.moveTo(obj.x + 15, obj.y);
+                    ctx.lineTo(obj.x + 50, obj.y + 20); // ワイヤー
+                    ctx.strokeStyle = '#556677'; ctx.lineWidth=2; ctx.stroke();
+                } 
+                else if (obj.type === 'house') {
+                    // 家の描画（本体＋三角屋根）
+                    ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+                    ctx.beginPath();
+                    ctx.moveTo(obj.x - 10, obj.y);
+                    ctx.lineTo(obj.x + obj.w/2, obj.y - 40);
+                    ctx.lineTo(obj.x + obj.w + 10, obj.y);
+                    ctx.fill();
+                }
+                else if (obj.type === 'mountain') {
+                    // 山の描画
+                    ctx.beginPath();
+                    ctx.moveTo(obj.x, groundY);
+                    ctx.lineTo(obj.x + obj.w/2, obj.y); // 山頂
+                    ctx.lineTo(obj.x + obj.w, groundY);
+                    ctx.fill();
+                }
+                else if (obj.type === 'factory') {
+                    // 工場の描画（煙突追加）
+                    ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+                    ctx.fillRect(obj.x + 10, obj.y - 30, 15, 30); // 煙突1
+                    ctx.fillRect(obj.x + 40, obj.y - 20, 15, 20); // 煙突2
+                }
+                else {
+                    // 通常のビル/コンテナ
+                    ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+                }
+                
+                // 窓の描画
+                if (obj.windows.length > 0) {
+                    ctx.fillStyle = (theme.type === 'factory') ? '#ff00ff' : '#ffffaa'; 
+                    obj.windows.forEach(win => {
+                        ctx.fillRect(obj.x + win.x, obj.y + win.y, 8, 8);
+                    });
+                }
+            });
+
+            // 4. Ground Line
+            ctx.strokeStyle = (theme.type==='mars') ? '#ff4400' : '#00ffff';
+            ctx.lineWidth = 4;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = ctx.strokeStyle;
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(w, groundY);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = (theme.type==='mars') ? '#331100' : '#001a1a';
+            ctx.fillRect(0, groundY, w, h - groundY);
+
+
+            // 5. Obstacles
+            obstacles.forEach(obs => {
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#ff0066';
+                ctx.fillStyle = obs.color;
+                ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+                ctx.strokeStyle = '#ffccff'; ctx.lineWidth = 2;
+                ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+                ctx.shadowBlur = 0;
+
+                if (obs.type === 'box') {
+                    ctx.fillStyle = '#ffff00';
+                    ctx.beginPath();
+                    const cx = obs.x + obs.w/2, cy = obs.y + obs.h/2;
+                    ctx.moveTo(cx, cy - 10); ctx.lineTo(cx - 10, cy + 10); ctx.lineTo(cx + 10, cy + 10);
+                    ctx.fill();
+                    ctx.fillStyle = '#000'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText('!', cx, cy + 8);
+                }
+            });
+
+            // 6. Particles
+            ctx.fillStyle = '#ffff00';
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life / 15;
+                ctx.fillRect(p.x, p.y, 4, 4);
+            });
+            ctx.globalAlpha = 1.0;
+
+            // 7. Player
+            this.drawRobot(player.x, player.y, player.width, player.height);
+        },
+
+        drawRobot: function(x, y, w, h) {
+            ctx.save();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00ffff';
+            ctx.fillStyle = '#00ffff';
+
+            if (player.isSliding) {
+                ctx.fillRect(x, y + 5, w, 15);
+                ctx.fillRect(x + 5, y, 25, 10);
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                ctx.fillRect(x-10, y+10, 20, 2);
+            } else {
+                ctx.fillRect(x + 8, y + 30, 8, 10);
+                ctx.fillRect(x + 24, y + 30, 8, 10);
+                ctx.fillRect(x, y + 15, w, 15);
+                ctx.fillRect(x + 5, y - 5, 30, 20);
+                ctx.fillRect(x + 18, y - 12, 4, 8);
+                ctx.fillStyle = (Math.floor(Date.now()/200)%2===0) ? '#ff0000' : '#550000';
+                ctx.fillRect(x + 17, y - 15, 6, 3);
+                ctx.fillStyle = '#000';
+                ctx.fillRect(x + 10, y + 2, 8, 4);
+                ctx.fillRect(x + 22, y + 2, 8, 4);
+                if (player.blinkTimer % 100 > 95) {
+                    ctx.fillStyle = '#00ffff';
+                    ctx.fillRect(x + 10, y + 2, 20, 4);
+                }
+            }
+
+            if(player.jumpCount > 0 && !player.isSliding) {
+                ctx.fillStyle = '#ffaa00';
+                ctx.beginPath();
+                ctx.moveTo(x + 10, y + 40);
+                ctx.lineTo(x + 15, y + 50 + Math.random()*10);
+                ctx.lineTo(x + 20, y + 40);
+                ctx.fill();
+            }
+            ctx.restore();
+        },
+
+        gameOver: function() {
+            state.running = false;
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath(); ctx.arc(player.x+20, player.y+20, 40, 0, Math.PI*2); ctx.fill();
+            ui.gameOver.classList.remove('hidden');
+        },
+
+        stageClear: function() {
+            state.running = false;
+            ui.clear.classList.remove('hidden');
+        },
+
+        bindControls: function() {
+            document.addEventListener('keydown', e => {
+                state.keys[e.key] = true;
+                if(state.running) {
+                    if(e.key===' ' || e.key==='ArrowUp') { e.preventDefault(); this.jump(); }
+                    if(e.key==='ArrowDown') e.preventDefault();
+                }
+            });
+            document.addEventListener('keyup', e => state.keys[e.key] = false);
+
+            const touch = (id, k, fn) => {
+                const el = document.getElementById(id);
+                const s = (e) => { e.preventDefault(); state.keys[k]=true; if(fn) fn(); };
+                const e_ = (e) => { e.preventDefault(); state.keys[k]=false; };
+                el.addEventListener('touchstart', s); el.addEventListener('touchend', e_);
+                el.addEventListener('mousedown', s); el.addEventListener('mouseup', e_);
+            };
+            touch('btnLeft', 'ArrowLeft');
+            touch('btnRight', 'ArrowRight');
+            touch('btnJump', 'ArrowUp', ()=>this.jump());
+            touch('btnSlide', 'ArrowDown');
+        }
+    };
+
+    window.onload = () => game.init();
+
+</script>
+</body>
+</html>
